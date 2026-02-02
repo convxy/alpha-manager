@@ -345,7 +345,7 @@ export default function App() {
     }, []);
 
     const handleLogout = async () => {
-        if (!confirm('确定要退出登录吗？退出后数据将仅保存在本地。')) return;
+        if (!confirm('确定要退出登录吗？')) return;
         try {
             await signOut(auth);
             setUser({ uid: 'local-user', isLocal: true });
