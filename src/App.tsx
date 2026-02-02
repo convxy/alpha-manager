@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
-    getFirestore, collection, doc, setDoc, getDocs,
+    getFirestore, collection, doc, setDoc, getDocs, getDoc,
     query, orderBy, writeBatch, enableIndexedDbPersistence
 } from 'firebase/firestore';
 import { getAuth, signOut, onAuthStateChanged, type User } from 'firebase/auth';
@@ -312,6 +312,27 @@ export default function App() {
                 if (u) {
                     setUser(u);
                     setShowAuthModal(false);
+                    // Fetch user profile for unlock status
+                    if (db) {
+                        try {
+                            const userDocRef = doc(db, 'users', u.uid);
+                            const userDocSnap = await getDoc(userDocRef);
+                            if (userDocSnap.exists() && userDocSnap.data().isProUnlocked) {
+                                setIsProUnlocked(true);
+                                setUnlockStatus(true); // Sync local state too
+                            } else {
+                                // If not in Firestore, check if we have it locally and sync UP
+                                const localStatus = getUnlockStatus();
+                                if (localStatus) {
+                                    await setDoc(userDocRef, { isProUnlocked: true }, { merge: true });
+                                    setIsProUnlocked(true);
+                                } else {
+                                    setIsProUnlocked(false);
+                                }
+                            }
+                        } catch (e) { console.error('Error fetching user profile:', e); }
+                    }
+
                     fetchRecords(u.uid);
                 } else {
                     // Not logged in - use local storage mode (free tier)
@@ -1128,6 +1149,13 @@ export default function App() {
             setUnlockStep('success');
             setIsProUnlocked(true);
             setUnlockStatus(true);
+
+            // Persist to Firestore if logged in
+            if (user && !user.isLocal && db) {
+                const userDocRef = doc(db, 'users', user.uid);
+                setDoc(userDocRef, { isProUnlocked: true }, { merge: true })
+                    .catch(e => console.error('Error saving unlock status:', e));
+            }
         }, 2000);
     };
 
