@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
     getFirestore, collection, doc, setDoc, deleteDoc, getDocs, getDoc,
-    query, orderBy, writeBatch, enableIndexedDbPersistence, limit, where
+    query, orderBy, writeBatch, enableIndexedDbPersistence, limit
 } from 'firebase/firestore';
 import { getAuth, signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import {
@@ -242,7 +242,7 @@ const setUnlockStatus = (unlocked: boolean) => {
 // --- MAIN COMPONENT ---
 export default function App() {
     const [user, setUser] = useState<any>(null);
-    const [isDemoMode, setIsDemoMode] = useState(false);
+    const [isDemoMode] = useState(false);
     const [records, setRecords] = useState<Record[]>([]);
     const [summaryData, setSummaryData] = useState<{ [date: string]: any }>({});
     const [activeTab, setActiveTab] = useState<'dashboard' | 'report'>('dashboard');
