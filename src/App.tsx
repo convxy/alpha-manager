@@ -56,7 +56,7 @@ const COLORS = {
 
 // --- INITIALIZATION ---
 let app: any, db: any, auth: any;
-let isDemoMode = false; // Production mode - using Firebase Firestore
+let GLOBAL_DEMO_MODE = false; // Production mode - using Firebase Firestore
 
 try {
     app = initializeApp(firebaseConfig);
@@ -73,7 +73,7 @@ try {
     });
 } catch (e) {
     console.warn("Firebase initialized in demo mode or already initialized.", e);
-    isDemoMode = true;
+    GLOBAL_DEMO_MODE = true;
 }
 
 // --- TYPES ---
@@ -129,13 +129,7 @@ const parseInputDate = (str: string): Date | null => {
 
 const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 
-const getWeekLabel = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(d.setDate(diff));
-    return `${monday.getMonth() + 1}.${monday.getDate()}`;
-};
+
 
 const parseData = (str: string): string[][] => {
     if (!str) return [];
@@ -242,7 +236,7 @@ const setUnlockStatus = (unlocked: boolean) => {
 // --- MAIN COMPONENT ---
 export default function App() {
     const [user, setUser] = useState<any>(null);
-    const [isDemoMode] = useState(false);
+    const [isDemoMode] = useState(GLOBAL_DEMO_MODE);
     const [records, setRecords] = useState<Record[]>([]);
     const [summaryData, setSummaryData] = useState<{ [date: string]: any }>({});
     const [activeTab, setActiveTab] = useState<'dashboard' | 'report'>('dashboard');
