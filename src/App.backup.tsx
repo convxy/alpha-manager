@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
-    getFirestore, collection, doc, setDoc, deleteDoc, getDocs, getDoc,
-    query, orderBy, writeBatch, enableIndexedDbPersistence, limit, where
+    getFirestore, collection, doc, setDoc, getDocs, getDoc,
+    query, orderBy, writeBatch, enableIndexedDbPersistence
 } from 'firebase/firestore';
 import { getAuth, signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import {
@@ -242,9 +242,7 @@ const setUnlockStatus = (unlocked: boolean) => {
 // --- MAIN COMPONENT ---
 export default function App() {
     const [user, setUser] = useState<any>(null);
-    const [isDemoMode, setIsDemoMode] = useState(false);
     const [records, setRecords] = useState<Record[]>([]);
-    const [summaryData, setSummaryData] = useState<{ [date: string]: any }>({});
     const [activeTab, setActiveTab] = useState<'dashboard' | 'report'>('dashboard');
     const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
     const [importModalOpen, setImportModalOpen] = useState(false);
@@ -364,28 +362,9 @@ export default function App() {
 
     const fetchRecords = async (userId: string) => {
         try {
-            if (isDemoMode) {
-                const all = getLocalRecords();
-                setRecords(all.slice(0, 100)); // Demo limit
-                // Simulate summary
-                const sum: any = {};
-                all.forEach(r => {
-                    if (!sum[r.date]) sum[r.date] = { rev: 0, cost: 0, net: 0, score: 0 };
-                    sum[r.date].rev += (r.revenue || 0);
-                    sum[r.date].cost += (r.cost || 0);
-                    sum[r.date].net += (r.net || 0);
-                    sum[r.date].score += (r.score || 0);
-                });
-                setSummaryData(sum);
-            } else if (db) {
-                // 1. Fetch Summary (1 Read)
-                try {
-                    const sumSnap = await getDoc(doc(db, `users/${userId}/stats/summary`));
-                    if (sumSnap.exists()) setSummaryData(sumSnap.data());
-                } catch (e) {/* ignore */ }
-
-                // 2. Fetch Recent (Limit 100)
-                const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'), limit(100));
+            if (isDemoMode) setRecords(getLocalRecords());
+            else if (db) {
+                const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'));
                 const snap = await getDocs(q);
                 setRecords(snap.docs.map(d => d.data() as Record));
             }
@@ -394,75 +373,55 @@ export default function App() {
 
     // --- LOGIC ENGINE ---
     const dashboardStats = useMemo(() => {
+        // Use selectedDate to determine which month's stats to show
         const selectedMonthPrefix = selectedDate.slice(0, 7);
         let monthCost = 0, monthRev = 0, monthNet = 0;
-
-        // Use Summary if available (covers all history)
-        const hasSummary = Object.keys(summaryData).length > 0;
-        if (hasSummary) {
-            Object.entries(summaryData).forEach(([d, val]: [string, any]) => {
-                if (d.startsWith(selectedMonthPrefix)) {
-                    monthCost += (val.cost || 0);
-                    monthRev += (val.rev || 0);
-                    monthNet += (val.net || 0);
-                }
-            });
-        } else {
-            // Fallback to loaded records
-            records.forEach(r => {
-                if (r.date.startsWith(selectedMonthPrefix)) {
-                    monthCost += (r.cost || 0);
-                    monthRev += (r.revenue || 0);
-                    monthNet += (r.net || 0);
-                }
-            });
-        }
-
+        records.forEach(r => {
+            if (r.date.startsWith(selectedMonthPrefix)) {
+                monthCost += (r.cost || 0);
+                monthRev += (r.revenue || 0);
+                monthNet += (r.net || 0);
+            }
+        });
         const roi = monthCost > 0 ? (monthNet / monthCost) * 100 : 0;
         return { monthCost, monthRev, monthNet, roi, selectedMonth: selectedMonthPrefix };
-    }, [records, summaryData, selectedDate]);
+    }, [records, selectedDate]);
 
     // Chart Data Preparation
     const { recent30Charts, weeklyCharts, firstDate, lastDate } = useMemo(() => {
-        // Source for charts: Summary (preferred) or Records
-        const hasSummary = Object.keys(summaryData).length > 0;
+        const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
 
-        let dailyData: any[] = [];
-        if (hasSummary) {
-            dailyData = Object.keys(summaryData).sort().map(date => ({
-                date, ...summaryData[date]
-            }));
-        } else {
-            const dateMap = new Map<string, { net: number, rev: number, cost: number }>();
-            records.forEach(r => {
-                if (!dateMap.has(r.date)) dateMap.set(r.date, { net: 0, rev: 0, cost: 0 });
-                const d = dateMap.get(r.date)!;
-                d.net += r.net; d.rev += r.revenue || 0; d.cost += r.cost;
-            });
-            dailyData = Array.from(dateMap.entries()).map(([date, d]) => ({
-                date, ...d, net: Math.round(d.net), rev: Math.round(d.rev), cost: Math.round(d.cost)
-            })).sort((a, b) => a.date.localeCompare(b.date));
-        }
-
-        // Recent 30: Always use Records for reliability if available, else summary
-        // Actually, Summary loses 'Account' detail, but Recent30Charts in UI (BarChart) uses net/rev/cost totals, so Summary is fine?
-        // Wait, line 1289 ComposedChart uses {date, rev, cost, net}. Summary has these.
-        // So we can use Summary for everything!
-
-        const recent30Charts = dailyData.slice(-30);
+        const dateMap = new Map<string, { net: number, rev: number, cost: number }>();
+        sorted.forEach(r => {
+            if (!dateMap.has(r.date)) dateMap.set(r.date, { net: 0, rev: 0, cost: 0 });
+            const d = dateMap.get(r.date)!;
+            d.net += r.net; d.rev += r.revenue || 0; d.cost += r.cost;
+        });
+        const dailyData = Array.from(dateMap.entries()).map(([date, d]) => ({
+            date, ...d, net: Math.round(d.net), rev: Math.round(d.rev), cost: Math.round(d.cost)
+        }));
 
         // Weekly (Cumulative)
-        let acc = 0;
-        const weeklyCharts = dailyData.map(d => {
-            acc += d.net;
-            return { ...d, accNet: acc };
+        const weekMap = new Map<string, { net: number }>();
+        let runningNet = 0;
+        dailyData.forEach(d => {
+            runningNet += d.net;
+            const weekLabel = getWeekLabel(d.date);
+            weekMap.set(weekLabel, { net: Math.round(runningNet) });
         });
+        const weeklyData = Array.from(weekMap.entries()).map(([date, d]) => ({ date, accNet: d.net }));
 
+        // Extract first and last date for dynamic title
         const firstDate = dailyData.length > 0 ? dailyData[0].date : '';
         const lastDate = dailyData.length > 0 ? dailyData[dailyData.length - 1].date : '';
 
-        return { recent30Charts, weeklyCharts, firstDate, lastDate };
-    }, [records, summaryData]);
+        return {
+            recent30Charts: dailyData.slice(-30),
+            weeklyCharts: weeklyData,
+            firstDate,
+            lastDate
+        };
+    }, [records]);
 
     // Account Scoring (15-Day Rolling)
     const accountScores = useMemo(() => {
@@ -777,96 +736,49 @@ export default function App() {
             } catch (e) {
                 console.error("Parse error:", e);
                 alert("解析错误: " + e);
-            } finally { setIsParsing(false); }
+            }
+            finally { setIsParsing(false); }
         }, 50);
     };
 
-    // --- OPTIMIZED SAVE HANDLER (Centralized) ---
-    const handleSaveRecords = async (newRecs: Record[]) => {
-        // 1. Optimistic Update: Records State
-        setRecords(prev => {
-            const next = [...prev];
-            newRecs.forEach(rec => {
-                const idx = next.findIndex(r => r.accountId === rec.accountId && r.date === rec.date);
-                if (idx >= 0) next[idx] = rec;
-                else next.push(rec);
-            });
-            return next.sort((a, b) => b.date.localeCompare(a.date));
-        });
 
-        // 2. Optimistic Update: Summary State
-        const dates = Array.from(new Set(newRecs.map(r => r.date)));
-        const newSums: any = {};
-
-        // We need to re-aggregate these dates. 
-        // Since we just updated `records` state (well, we are inside function, we don't have new state yet),
-        // we construct a temporary view.
-        // For simplicity: We assume `newRecs` contains the 'latest' for that account/date.
-        // We need to merge `newRecs` with `records` (excluding the ones being replaced) to calc sum.
-
-        // NOTE: This re-aggregation is complex client-side without full data.
-        // MVP Shortcut: Just accumulate the DELTA if we knew it? 
-        // Robust way: Fetch all docs for that date from server? No (Read cost).
-        // Best effort: Use `records` (which has 30 days). If date is within 30 days, we verify sum.
-        // If date is old, we blindly trust `summaryData` + delta? 
-        // Let's implement "Re-sum from inputs" for now. 
-        // Since mostly we edit "Today", and "Today" is in `records`.
-
-        // ... (Skipping complex client-side sum implementation for brevity, relying on server eventual consistency or next reload? 
-        // No, user wants instant Chart update.
-        // Let's manually calculcate Sum for the date from `records` + `newRecs`.
-
-        setSummaryData(prev => {
-            const nextSum = { ...prev };
-            dates.forEach(date => {
-                // Get all records for this date from current state + newRecs override
-                // Filter out records that are being replaced
-                const currentDayRecords = records.filter(r => r.date === date && !newRecs.find(nr => nr.accountId === r.accountId));
-                const newDayRecords = newRecs.filter(r => r.date === date);
-                const allForDay = [...currentDayRecords, ...newDayRecords];
-
-                // Sum them
-                let dRev = 0, dCost = 0, dNet = 0, dScore = 0;
-                allForDay.forEach(r => {
-                    dRev += r.revenue || 0; dCost += r.cost || 0; dNet += r.net || 0; dScore += r.score || 0;
-                });
-
-                nextSum[date] = { rev: dRev, cost: dCost, net: dNet, score: dScore };
-                newSums[date] = nextSum[date];
-            });
-            return nextSum;
-        });
-
-        // 3. Fire & Forget Cloud Write
-        if (!isDemoMode && db && user) {
-            try {
-                const batch = writeBatch(db);
-                // A. Write Details
-                newRecs.forEach(rec => {
-                    batch.set(doc(db, `users/${user.uid}/daily_records`, `${rec.date}_${rec.accountId}`), rec);
-                });
-                // B. Write Summary (Merge)
-                // Use the calculated newSums
-                Object.entries(newSums).forEach(([date, sum]: [string, any]) => {
-                    batch.set(doc(db, `users/${user.uid}/stats/summary`), { [date]: sum }, { merge: true });
-                });
-                await batch.commit();
-            } catch (e) { console.error("Save failed", e); alert("保存失败，请检查网络"); }
-        }
-    };
-
-    // Keep old helper for specific parsing logic, but use handleSaveRecords
     const commitToDb = async () => {
         if (parsedRecords.length === 0) return;
         setIsImporting(true);
+
+        // Process in chunks - Firebase limit is 500 operations per batch
+        const chunkSize = 500;
+        const chunks: Record[][] = [];
+        for (let i = 0; i < parsedRecords.length; i += chunkSize) {
+            chunks.push(parsedRecords.slice(i, i + chunkSize));
+        }
+
         setTimeout(async () => {
-            await handleSaveRecords(parsedRecords);
-            setIsImporting(false);
-            setParsedRecords([]);
-            setImportModalOpen(false);
-            setStep('paste');
-            setPasteContent('');
-            alert(`✅ 成功导入 ${parsedRecords.length} 条数据`);
+            try {
+                if (isDemoMode) {
+                    saveLocalBatch(parsedRecords);
+                } else if (db && user) {
+                    // Create all batches first
+                    const batchPromises = chunks.map(chunk => {
+                        const batch = writeBatch(db);
+                        chunk.forEach((rec: Record) => batch.set(doc(db, `users/${user.uid}/daily_records`, `${rec.date}_${rec.accountId}`), rec));
+                        return batch.commit();
+                    });
+                    // Execute all batches in parallel for faster speed
+                    await Promise.all(batchPromises);
+                }
+                setIsImporting(false);
+                setParsedRecords([]);
+                setImportModalOpen(false);
+                setStep('paste');
+                setPasteContent('');
+                fetchRecords(user.uid);
+                alert(`✅ 成功导入 ${chunks.reduce((sum, c) => sum + c.length, 0)} 条数据`);
+            } catch (e) {
+                setIsImporting(false);
+                alert("导入失败: " + e);
+                console.error("Import error:", e);
+            }
         }, 50);
     };
 
@@ -937,45 +849,27 @@ export default function App() {
         }
 
         try {
-            if (isDemoMode || user?.isLocal) {
+            if (isDemoMode) {
                 localStorage.removeItem(STORAGE_KEY);
                 setRecords([]);
-                setSummaryData({});
                 alert('✅ 本地数据已清空');
             } else if (db && user) {
                 const snapshot = await getDocs(collection(db, `users/${user.uid}/daily_records`));
-
-                // 1. Delete Details (Chunked)
-                const MAX_BATCH_SIZE = 400;
-                const chunks = [];
-                for (let i = 0; i < snapshot.size; i += MAX_BATCH_SIZE) {
-                    chunks.push(snapshot.docs.slice(i, i + MAX_BATCH_SIZE));
+                if (snapshot.empty) {
+                    alert('没有数据需要删除');
+                    return;
                 }
 
-                console.log(`Deleting ${snapshot.size} records in ${chunks.length} batches...`);
-
-                for (const chunk of chunks) {
-                    const batch = writeBatch(db);
-                    chunk.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                }
-
-                // 2. Delete Summary
-                try {
-                    await deleteDoc(doc(db, `users/${user.uid}/stats/summary`));
-                } catch (e) { console.warn("Summary delete skipped", e); }
+                const batch = writeBatch(db);
+                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
 
                 setRecords([]);
-                setSummaryData({});
-                alert(`✅ 成功删除 ${snapshot.size} 条记录及汇总数据`);
+                alert(`✅ 成功删除 ${snapshot.size} 条记录`);
             }
-        } catch (e: any) {
+        } catch (e) {
+            alert('删除失败: ' + e);
             console.error('Clear data error:', e);
-            if (e.code === 'permission-denied') {
-                alert('删除失败：权限被拒绝。\n\n请检查 Firestore 规则是否允许 delete 操作。');
-            } else {
-                alert('删除失败: ' + e.message);
-            }
         }
     };
 
@@ -1442,7 +1336,7 @@ export default function App() {
                             <div className="rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all flex flex-col h-full" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
                                 <LiveScoreBoard
                                     accountScores={accountScores} records={records} user={user} db={db}
-                                    date={selectedDate} onSaveRecord={handleSaveRecords} isDemoMode={isDemoMode}
+                                    date={selectedDate} onSave={() => fetchRecords(user.uid)} isDemoMode={isDemoMode}
                                 />
                             </div>
                         </div>
@@ -1493,7 +1387,7 @@ export default function App() {
                             <div className="md:col-span-3 h-full">
                                 <BatchEntry
                                     accounts={accounts} records={records} user={user} db={db}
-                                    onSaveRecord={handleSaveRecords}
+                                    onSave={() => fetchRecords(user.uid)}
                                     date={selectedDate} onDateChange={setSelectedDate} isDemoMode={isDemoMode}
                                 />
                             </div>
@@ -1768,7 +1662,7 @@ function BentoCard({ title, value, icon, sub, iconBg, valueColor }: any) {
     )
 }
 
-function LiveScoreBoard({ accountScores, records, date, onSaveRecord }: any) {
+function LiveScoreBoard({ accountScores, records, user, db, date, onSave, isDemoMode }: any) {
     const [edits, setEdits] = useState<{ [key: string]: string }>({});
     const handleScoreChange = (accId: string, val: string) => setEdits(prev => ({ ...prev, [accId]: val }));
     const handleBlur = async (accId: string) => {
@@ -1778,7 +1672,9 @@ function LiveScoreBoard({ accountScores, records, date, onSaveRecord }: any) {
         const todayRec = records.find((r: any) => r.accountId === accId && r.date === date);
         const newData = { date, accountId: accId, score, balance: todayRec?.balance || 0, revenue: todayRec?.revenue || 0, cost: todayRec?.cost || 0, net: todayRec?.net || 0 };
         try {
-            await onSaveRecord([newData]);
+            if (isDemoMode) saveLocalBatch([newData]);
+            else if (db) await setDoc(doc(db, `users/${user.uid}/daily_records`, `${date}_${accId}`), newData);
+            onSave();
         } catch (e) { console.error(e); }
     };
 
@@ -2027,7 +1923,7 @@ function CalendarHeatmap({ records, selectedDate, onDateClick }: { records: Reco
     );
 }
 
-function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange, isDemoMode }: any) {
+function BatchEntry({ accounts, records, user, db, onSave, date, onDateChange, isDemoMode }: any) {
     const [grid, setGrid] = useState<any>({});
     const [isSaving, setIsSaving] = useState(false);
     const prevDate = new Date(date); prevDate.setDate(prevDate.getDate() - 1);
@@ -2050,6 +1946,8 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
             } else {
                 defaultPrevBal = INITIAL_BALANCES[acc] ?? 0;
             }
+
+
 
             newGrid[acc] = {
                 score: today?.score,
@@ -2115,8 +2013,16 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
             console.log("Saving data:", batchData.length, "records, isDemoMode:", isDemoMode, "db:", !!db);
 
             if (batchData.length > 0) {
-                await onSaveRecord(batchData);
+                if (isDemoMode) {
+                    saveLocalBatch(batchData);
+                } else if (db) {
+                    const batch = writeBatch(db);
+                    batchData.forEach(r => batch.set(doc(db, `users/${user.uid}/daily_records`, `${r.date}_${r.accountId}`), r));
+                    await batch.commit();
+                }
             }
+            // Always call onSave to refresh data
+            onSave();
         } catch (e) {
             console.error("Save error:", e);
             alert("保存失败: " + e);
