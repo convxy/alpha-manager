@@ -386,56 +386,6 @@ export default function App() {
         } catch (e) { console.error(e); }
     };
 
-    // --- 紧急恢复：重建 Summary 文档 ---
-    const rebuildSummary = async () => {
-        if (!user || user.isLocal || !db) {
-            alert('请先登录您的账号');
-            return;
-        }
-
-        if (!confirm('⚠️ 数据恢复工具\n\n这将从云端读取所有历史记录并重建汇总数据。\n\n确定继续吗？')) {
-            return;
-        }
-
-        try {
-            alert('正在加载所有历史数据，请稍候...');
-
-            // 1. 获取所有记录（无限制）
-            const q = query(collection(db, `users/${user.uid}/daily_records`), orderBy('date', 'desc'));
-            const snap = await getDocs(q);
-            const allRecords = snap.docs.map(d => d.data() as Record);
-
-            console.log(`已加载 ${allRecords.length} 条历史记录`);
-
-            // 2. 重新计算 Summary
-            const newSummary: { [date: string]: { rev: number; cost: number; net: number; score: number } } = {};
-            allRecords.forEach(r => {
-                if (!newSummary[r.date]) {
-                    newSummary[r.date] = { rev: 0, cost: 0, net: 0, score: 0 };
-                }
-                newSummary[r.date].rev += (r.revenue || 0);
-                newSummary[r.date].cost += (r.cost || 0);
-                newSummary[r.date].net += (r.net || 0);
-                newSummary[r.date].score += (r.score || 0);
-            });
-
-            console.log(`已计算 ${Object.keys(newSummary).length} 天的汇总数据`);
-
-            // 3. 写入新的 Summary 文档（完全覆盖）
-            await setDoc(doc(db, `users/${user.uid}/stats/summary`), newSummary);
-
-            // 4. 更新本地状态
-            setRecords(allRecords);
-            setSummaryData(newSummary);
-
-            alert(`✅ 恢复成功！\n\n已加载 ${allRecords.length} 条记录\n已重建 ${Object.keys(newSummary).length} 天的汇总数据\n\n您的所有历史数据现在应该正常显示了！`);
-
-        } catch (e) {
-            console.error('恢复失败:', e);
-            alert('恢复失败: ' + e);
-        }
-    };
-
     // --- LOGIC ENGINE ---
     const dashboardStats = useMemo(() => {
         const selectedMonthPrefix = selectedDate.slice(0, 7);
@@ -1396,10 +1346,6 @@ export default function App() {
                             <Star size={20} style={{ color: COLORS.revenue }} fill={COLORS.revenue} />
                         </button>
                     )}
-                    {/* 🔧 数据恢复按钮 (临时) */}
-                    <button onClick={rebuildSummary} className="p-3 hover:shadow-md rounded-full transition-all border-2 border-green-400 hover:bg-green-50 animate-pulse" style={{ backgroundColor: COLORS.card }} title="🔧 恢复历史数据">
-                        <CheckCircle size={20} style={{ color: '#22c55e' }} />
-                    </button>
                     <button onClick={clearAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-red-50" style={{ backgroundColor: COLORS.card }} title="清空所有数据">
                         <Trash2 size={20} style={{ color: COLORS.loss }} />
                     </button>
