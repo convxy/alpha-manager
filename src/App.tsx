@@ -378,8 +378,8 @@ export default function App() {
                     if (sumSnap.exists()) setSummaryData(sumSnap.data());
                 } catch (e) {/* ignore */ }
 
-                // 2. Fetch Recent (Limit 100)
-                const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'), limit(100));
+                // 2. Fetch Recent (Limit 300 - 约覆盖1个月)
+                const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'), limit(300));
                 const snap = await getDocs(q);
                 setRecords(snap.docs.map(d => d.data() as Record));
             }
