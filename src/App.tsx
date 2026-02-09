@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
     getFirestore, collection, doc, setDoc, deleteDoc, getDocs, getDoc,
-    query, orderBy, writeBatch, enableIndexedDbPersistence, limit
+    query, orderBy, writeBatch, enableIndexedDbPersistence
 } from 'firebase/firestore';
 import { getAuth, signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import {
@@ -378,12 +378,48 @@ export default function App() {
                     if (sumSnap.exists()) setSummaryData(sumSnap.data());
                 } catch (e) {/* ignore */ }
 
-                // 2. Fetch Recent (Limit 300 - 约覆盖1个月)
-                const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'), limit(300));
+                // 2. Fetch Recent (Full History - 无限制)
+                const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'));
                 const snap = await getDocs(q);
                 setRecords(snap.docs.map(d => d.data() as Record));
             }
         } catch (e) { console.error(e); }
+    };
+
+    // --- 全量备份功能 ---
+    const backupAllData = async () => {
+        if (!user || user.isLocal || !db) {
+            exportToJSON(); // Fallback for local user
+            return;
+        }
+
+        try {
+            alert('正在打包所有云端数据，请稍候...');
+            // 1. Fetch ALL records
+            const q = query(collection(db, `users/${user.uid}/daily_records`), orderBy('date', 'desc'));
+            const snap = await getDocs(q);
+            const allRecords = snap.docs.map(d => d.data() as Record);
+
+            if (allRecords.length === 0) {
+                alert('没有数据可备份');
+                return;
+            }
+
+            // 2. Download JSON
+            const jsonContent = JSON.stringify(allRecords, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `AlphaDash_FullBackup_${formatDate(new Date())}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            alert(`✅ 备份成功！\n已下载 ${allRecords.length} 条记录。`);
+        } catch (e) {
+            console.error('Backup failed:', e);
+            alert('备份失败: ' + e);
+        }
     };
 
     // --- LOGIC ENGINE ---
@@ -1346,6 +1382,10 @@ export default function App() {
                             <Star size={20} style={{ color: COLORS.revenue }} fill={COLORS.revenue} />
                         </button>
                     )}
+                    {/* ☁️ 全量备份按钮 */}
+                    <button onClick={backupAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-blue-50" style={{ backgroundColor: COLORS.card }} title="备份云端数据">
+                        <Download size={20} style={{ color: COLORS.primary }} />
+                    </button>
                     <button onClick={clearAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-red-50" style={{ backgroundColor: COLORS.card }} title="清空所有数据">
                         <Trash2 size={20} style={{ color: COLORS.loss }} />
                     </button>
