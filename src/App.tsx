@@ -38,19 +38,23 @@ const INITIAL_BALANCES: { [key: string]: number } = {
 
 // --- 主题色板 (支持暗色模式) ---
 const LIGHT_THEME = {
-    bg: '#F7F7F5', card: '#FFFFFF', textPrimary: '#434343', textSecondary: '#8C8C8C',
-    profit: '#8EB897', profitLight: '#E3EFE5', loss: '#DD8D8D', lossLight: '#F7E6E6',
-    revenue: '#9FB1BC', revenueLight: '#EBF1F5', cost: '#D3C09A', costLight: '#F5F0E6',
-    primary: '#6D8299', accent: '#E07A5F', grid: '#E5E5E5',
+    '--color-bg': '#F7F7F5', '--color-card': '#FFFFFF', '--color-textPrimary': '#434343', '--color-textSecondary': '#8C8C8C',
+    '--color-profit': '#8EB897', '--color-profitLight': '#E3EFE5', '--color-loss': '#DD8D8D', '--color-lossLight': '#F7E6E6',
+    '--color-revenue': '#9FB1BC', '--color-revenueLight': '#EBF1F5', '--color-cost': '#D3C09A', '--color-costLight': '#F5F0E6',
+    '--color-primary': '#6D8299', '--color-accent': '#E07A5F', '--color-grid': '#E5E5E5',
 };
 const DARK_THEME = {
-    bg: '#1A1A2E', card: '#232340', textPrimary: '#E8E8EC', textSecondary: '#8888A0',
-    profit: '#6FCF97', profitLight: '#1E3A2A', loss: '#EB6B6B', lossLight: '#3A1E1E',
-    revenue: '#7EB8D8', revenueLight: '#1E2E3A', cost: '#D4B978', costLight: '#3A341E',
-    primary: '#8AADC4', accent: '#E07A5F', grid: '#333355',
+    '--color-bg': '#1A1A2E', '--color-card': '#232340', '--color-textPrimary': '#E8E8EC', '--color-textSecondary': '#8888A0',
+    '--color-profit': '#6FCF97', '--color-profitLight': '#1E3A2A', '--color-loss': '#EB6B6B', '--color-lossLight': '#3A1E1E',
+    '--color-revenue': '#7EB8D8', '--color-revenueLight': '#1E2E3A', '--color-cost': '#D4B978', '--color-costLight': '#3A341E',
+    '--color-primary': '#8AADC4', '--color-accent': '#E07A5F', '--color-grid': '#333355',
 };
-// 全局可变主题引用（供 App 外部子组件使用）
-let COLORS = { ...LIGHT_THEME };
+
+// 全局静态主题引用（全部转换为 CSS 变量调用）
+const COLORS = Object.keys(LIGHT_THEME).reduce((acc, key) => {
+    acc[key.replace('--color-', '')] = `var(${key})`;
+    return acc;
+}, {} as Record<string, string>);
 
 // --- INITIALIZATION ---
 let app: any, db: any, auth: any;
@@ -75,7 +79,7 @@ try {
 }
 
 // --- TYPES ---
-type Record = {
+type AlphaRecord = {
     date: string;
     accountId: string;
     score: number;
@@ -156,11 +160,11 @@ const parseData = (str: string): string[][] => {
 const STORAGE_KEY = 'binance_alpha_records';
 const ACCOUNTS_KEY = 'binance_alpha_accounts';
 
-const getLocalRecords = (): Record[] => {
+const getLocalRecords = (): AlphaRecord[] => {
     const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
 };
-const saveLocalBatch = (newRecs: Record[]) => {
+const saveLocalBatch = (newRecs: AlphaRecord[]) => {
     const current = getLocalRecords();
     const map = new Map();
     current.forEach(r => map.set(`${r.date}_${r.accountId}`, r));
@@ -234,18 +238,16 @@ const setUnlockStatus = (unlocked: boolean) => {
 // --- MAIN COMPONENT ---
 export default function App() {
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
-    // 更新全局 COLORS 对象（子组件通过闭包读取）
-    Object.assign(COLORS, darkMode ? DARK_THEME : LIGHT_THEME);
     const toggleDarkMode = () => { setDarkMode(v => { localStorage.setItem('darkMode', String(!v)); return !v; }); };
     const [user, setUser] = useState<any>(null);
     const [isDemoMode] = useState(GLOBAL_DEMO_MODE);
-    const [records, setRecords] = useState<Record[]>([]);
+    const [records, setRecords] = useState<AlphaRecord[]>([]);
     const [summaryData, setSummaryData] = useState<{ [date: string]: any }>({});
     const [activeTab, setActiveTab] = useState<'dashboard' | 'report'>('dashboard');
     const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
     const [importModalOpen, setImportModalOpen] = useState(false);
     const [pasteContent, setPasteContent] = useState('');
-    const [parsedRecords, setParsedRecords] = useState<Record[]>([]);
+    const [parsedRecords, setParsedRecords] = useState<AlphaRecord[]>([]);
     const [step, setStep] = useState<'paste' | 'preview'>('paste');
     const [isParsing, setIsParsing] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
@@ -383,7 +385,7 @@ export default function App() {
                 // 2. Fetch Recent (Full History - 无限制)
                 const q = query(collection(db, `users/${userId}/daily_records`), orderBy('date', 'desc'));
                 const snap = await getDocs(q);
-                setRecords(snap.docs.map(d => d.data() as Record));
+                setRecords(snap.docs.map(d => d.data() as AlphaRecord));
             }
         } catch (e) { console.error(e); }
     };
@@ -400,7 +402,7 @@ export default function App() {
             // 1. Fetch ALL records
             const q = query(collection(db, `users/${user.uid}/daily_records`), orderBy('date', 'desc'));
             const snap = await getDocs(q);
-            const allRecords = snap.docs.map(d => d.data() as Record);
+            const allRecords = snap.docs.map(d => d.data() as AlphaRecord);
 
             if (allRecords.length === 0) {
                 alert('没有数据可备份');
@@ -574,7 +576,7 @@ export default function App() {
                 if (isExportedFormat) {
                     console.log("Detected AlphaDash exported format");
                     // Parse row-based format
-                    const previews: Record[] = [];
+                    const previews: AlphaRecord[] = [];
 
                     // Find column indices
                     const dateIdx = 0;
@@ -745,7 +747,7 @@ export default function App() {
                     return;
                 }
 
-                const previews: Record[] = [];
+                const previews: AlphaRecord[] = [];
                 const COST_COL_INDEX = 19;
 
                 // Find actual data start row (first row with valid date after header)
@@ -814,7 +816,7 @@ export default function App() {
     };
 
     // --- OPTIMIZED SAVE HANDLER (Centralized) ---
-    const handleSaveRecords = async (newRecs: Record[]) => {
+    const handleSaveRecords = async (newRecs: AlphaRecord[]) => {
         // 1. Optimistic Update: Records State
         setRecords(prev => {
             const next = [...prev];
@@ -911,7 +913,7 @@ export default function App() {
         const numDays = Math.floor(Math.random() * 31) + 60; // 60-90 days
 
         const accounts = Array.from({ length: numAccounts }, (_, i) => `${i + 1}号`);
-        const newRecs: Record[] = [];
+        const newRecs: AlphaRecord[] = [];
 
         // Generate initial balances for each account (random between 500-2000)
         const initialBalances = accounts.map(() => Math.random() * 1500 + 500);
@@ -1787,6 +1789,17 @@ export default function App() {
                     </div>
                 </div>
             )}
+
+            <style>{`
+                :root {
+                    ${Object.entries(darkMode ? DARK_THEME : LIGHT_THEME).map(([k, v]) => `${k}: ${v};`).join('\n                    ')}
+                    background-color: var(--color-bg);
+                    color: var(--color-textPrimary);
+                }
+                body, html {
+                    background-color: var(--color-bg);
+                }
+            `}</style>
         </div >
     );
 }
@@ -1864,7 +1877,7 @@ function LiveScoreBoard({ accountScores, records, date, onSaveRecord }: any) {
 }
 
 // New component for historical stats
-function HistoryStats({ accounts, records }: { accounts: string[], records: Record[] }) {
+function HistoryStats({ accounts, records }: { accounts: string[], records: AlphaRecord[] }) {
     const stats = useMemo(() => {
         // Calculate totals for all accounts
         let totalRevenue = 0, totalCost = 0, totalNet = 0, totalAirdrops = 0;
@@ -1982,7 +1995,7 @@ function HistoryStats({ accounts, records }: { accounts: string[], records: Reco
     );
 }
 
-function CalendarHeatmap({ records, selectedDate, onDateClick }: { records: Record[], selectedDate?: string, onDateClick?: (date: string) => void }) {
+function CalendarHeatmap({ records, selectedDate, onDateClick }: { records: AlphaRecord[], selectedDate?: string, onDateClick?: (date: string) => void }) {
     const [viewDate, setViewDate] = useState(new Date());
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
