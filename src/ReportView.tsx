@@ -2,16 +2,15 @@ import { useMemo } from 'react';
 import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Bar, Cell } from 'recharts';
 import { Activity } from 'lucide-react';
 
-const COLORS = {
-  bg: '#F7F7F5',
-  card: '#FFFFFF',
-  textPrimary: '#434343',
-  textSecondary: '#8C8C8C',
-  profit: '#8EB897',
-  loss: '#DD8D8D',
-  revenue: '#9FB1BC',
-  cost: '#D3C09A',
-  primary: '#6D8299',
+// 动态主题（与 App.tsx 保持同步）
+const getColors = () => localStorage.getItem('darkMode') === 'true' ? {
+  bg: '#1A1A2E', card: '#232340', textPrimary: '#E8E8EC', textSecondary: '#8888A0',
+  profit: '#6FCF97', loss: '#EB6B6B', revenue: '#7EB8D8', cost: '#D4B978',
+  primary: '#8AADC4', grid: '#333355',
+} : {
+  bg: '#F7F7F5', card: '#FFFFFF', textPrimary: '#434343', textSecondary: '#8C8C8C',
+  profit: '#8EB897', loss: '#DD8D8D', revenue: '#9FB1BC', cost: '#D3C09A',
+  primary: '#6D8299', grid: '#E5E5E5',
 };
 
 const getPeriodLabel = (dateStr: string) => {
@@ -35,6 +34,7 @@ interface ReportViewProps {
 }
 
 export default function ReportView({ records }: ReportViewProps) {
+  const COLORS = getColors();
   const periodReport = useMemo(() => {
     const map = new Map<string, { period: string; cost: number; rev: number; net: number }>();
     records.forEach(r => {
@@ -58,7 +58,7 @@ export default function ReportView({ records }: ReportViewProps) {
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={[...periodReport].reverse()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.grid} />
               <XAxis dataKey="period" tick={{ fontSize: 12, fill: COLORS.textSecondary, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 12, fill: COLORS.textSecondary, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} tickFormatter={v => Math.round(v).toString()} />
               <RechartsTooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)', fontFamily: 'Space Grotesk' }} formatter={(value: any) => Math.round(value as number)} />

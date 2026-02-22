@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 import {
     Calendar as CalendarIcon, TrendingDown, TrendingUp,
-    Save, FileUp, Monitor, X, ArrowRight, PieChart, DollarSign, Percent, CheckCircle, ChevronLeft, ChevronRight, Loader2, Wallet, BarChart3, LineChart, Trash2, Download, Twitter, Upload, Star, Gift, ExternalLink, Share2
+    Save, FileUp, Monitor, X, ArrowRight, PieChart, DollarSign, Percent, CheckCircle, ChevronLeft, ChevronRight, Loader2, Wallet, BarChart3, LineChart, Trash2, Download, Twitter, Upload, Star, Gift, ExternalLink, Share2, Moon, Sun
 } from 'lucide-react';
 import logoIcon from './assets/logo_icon.png';
 import logoText from './assets/logo_text.png';
@@ -36,23 +36,21 @@ const INITIAL_BALANCES: { [key: string]: number } = {
     '5号': 573.54, '6号': 529.05, '7号': 635.33, '8号': 639.45
 };
 
-// --- MORANDI PALETTE (STYLE FROM FILE 1) ---
-const COLORS = {
-    bg: '#F7F7F5', // Warm Grey
-    card: '#FFFFFF',
-    textPrimary: '#434343',
-    textSecondary: '#8C8C8C',
-    profit: '#8EB897', // Sage Green
-    profitLight: '#E3EFE5',
-    loss: '#DD8D8D',   // Dusty Red
-    lossLight: '#F7E6E6',
-    revenue: '#9FB1BC', // Muted Blue/Grey
-    revenueLight: '#EBF1F5',
-    cost: '#D3C09A',    // Sand/Beige
-    costLight: '#F5F0E6',
-    primary: '#6D8299', // Slate Blue
-    accent: '#E07A5F',  // Terra Cotta
+// --- 主题色板 (支持暗色模式) ---
+const LIGHT_THEME = {
+    bg: '#F7F7F5', card: '#FFFFFF', textPrimary: '#434343', textSecondary: '#8C8C8C',
+    profit: '#8EB897', profitLight: '#E3EFE5', loss: '#DD8D8D', lossLight: '#F7E6E6',
+    revenue: '#9FB1BC', revenueLight: '#EBF1F5', cost: '#D3C09A', costLight: '#F5F0E6',
+    primary: '#6D8299', accent: '#E07A5F', grid: '#E5E5E5',
 };
+const DARK_THEME = {
+    bg: '#1A1A2E', card: '#232340', textPrimary: '#E8E8EC', textSecondary: '#8888A0',
+    profit: '#6FCF97', profitLight: '#1E3A2A', loss: '#EB6B6B', lossLight: '#3A1E1E',
+    revenue: '#7EB8D8', revenueLight: '#1E2E3A', cost: '#D4B978', costLight: '#3A341E',
+    primary: '#8AADC4', accent: '#E07A5F', grid: '#333355',
+};
+// 全局可变主题引用（供 App 外部子组件使用）
+let COLORS = { ...LIGHT_THEME };
 
 // --- INITIALIZATION ---
 let app: any, db: any, auth: any;
@@ -235,6 +233,10 @@ const setUnlockStatus = (unlocked: boolean) => {
 
 // --- MAIN COMPONENT ---
 export default function App() {
+    const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+    // 更新全局 COLORS 对象（子组件通过闭包读取）
+    Object.assign(COLORS, darkMode ? DARK_THEME : LIGHT_THEME);
+    const toggleDarkMode = () => { setDarkMode(v => { localStorage.setItem('darkMode', String(!v)); return !v; }); };
     const [user, setUser] = useState<any>(null);
     const [isDemoMode] = useState(GLOBAL_DEMO_MODE);
     const [records, setRecords] = useState<Record[]>([]);
@@ -1382,6 +1384,10 @@ export default function App() {
                             <Star size={20} style={{ color: COLORS.revenue }} fill={COLORS.revenue} />
                         </button>
                     )}
+                    {/* 🌙 暗色模式切换 */}
+                    <button onClick={toggleDarkMode} className="p-3 hover:shadow-md rounded-full transition-all border border-white" style={{ backgroundColor: COLORS.card }} title={darkMode ? '切换亮色模式' : '切换暗色模式'}>
+                        {darkMode ? <Sun size={20} style={{ color: COLORS.accent }} /> : <Moon size={20} style={{ color: COLORS.primary }} />}
+                    </button>
                     {/* ☁️ 全量备份按钮 */}
                     <button onClick={backupAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-blue-50" style={{ backgroundColor: COLORS.card }} title="备份云端数据">
                         <Download size={20} style={{ color: COLORS.primary }} />
@@ -1427,7 +1433,7 @@ export default function App() {
                                 <div className="h-64 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <ComposedChart data={recent30Charts} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.grid} />
                                             <XAxis dataKey="date" tickFormatter={d => d.slice(8)} tick={{ fontSize: 11, fill: COLORS.textSecondary, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} interval={2} />
                                             <YAxis tick={{ fontSize: 11, fill: COLORS.textSecondary, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} />
                                             <RechartsTooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)', fontFamily: 'Space Grotesk' }} />
@@ -1457,7 +1463,7 @@ export default function App() {
                                                     <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.grid} />
                                             <XAxis dataKey="date" tick={{ fontSize: 11, fill: COLORS.textSecondary, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} minTickGap={30} />
                                             <YAxis tick={{ fontSize: 11, fill: COLORS.textSecondary, fontFamily: 'Space Grotesk' }} axisLine={false} tickLine={false} />
                                             <RechartsTooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)', fontFamily: 'Space Grotesk' }} />
