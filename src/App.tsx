@@ -428,31 +428,51 @@ export default function App() {
 
     // --- LOGIC ENGINE ---
     const dashboardStats = useMemo(() => {
-        const selectedMonthPrefix = selectedDate.slice(0, 7);
+        const [targetYearStr, targetMonthStr] = selectedDate.split('-');
+        const targetYear = parseInt(targetYearStr, 10);
+        const targetMonth = parseInt(targetMonthStr, 10); // 1-12
         let monthCost = 0, monthRev = 0, monthNet = 0;
 
         // Combine data sources robustly
         const dateMap = new Map<string, { net: number, rev: number, cost: number }>();
 
+        const normalizeKey = (dateStr: string) => {
+            if (!dateStr) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            const d = parseInputDate(dateStr) || new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+            return dateStr;
+        };
+
         // 1. Fill from records (most accurate recent source)
         records.forEach(r => {
-            if (!dateMap.has(r.date)) dateMap.set(r.date, { net: 0, rev: 0, cost: 0 });
-            const d = dateMap.get(r.date)!;
-            d.net += r.net; d.rev += r.revenue || 0; d.cost += r.cost;
+            const normDate = normalizeKey(r.date);
+            if (!dateMap.has(normDate)) dateMap.set(normDate, { net: 0, rev: 0, cost: 0 });
+            const d = dateMap.get(normDate)!;
+            d.net += Number(r.net) || 0;
+            d.rev += Number(r.revenue) || 0;
+            d.cost += Number(r.cost) || 0;
         });
 
         // 2. Fill gaps from summary (historical source)
         if (Object.keys(summaryData).length > 0) {
-            Object.entries(summaryData).forEach(([d, val]: [string, any]) => {
-                if (!dateMap.has(d)) {
-                    dateMap.set(d, { net: val.net || 0, rev: val.rev || 0, cost: val.cost || 0 });
+            Object.entries(summaryData).forEach(([dStr, val]: [string, any]) => {
+                const normDate = normalizeKey(dStr);
+                if (!dateMap.has(normDate)) {
+                    dateMap.set(normDate, { net: Number(val.net) || 0, rev: Number(val.rev) || 0, cost: Number(val.cost) || 0 });
                 }
             });
         }
 
         // 3. Calculate month stats
-        for (const [date, data] of dateMap.entries()) {
-            if (date.startsWith(selectedMonthPrefix)) {
+        for (const [dateStr, data] of dateMap.entries()) {
+            const d = parseInputDate(dateStr) || new Date(dateStr);
+            if (!isNaN(d.getTime()) && d.getFullYear() === targetYear && (d.getMonth() + 1) === targetMonth) {
                 monthCost += data.cost;
                 monthRev += data.rev;
                 monthNet += data.net;
@@ -460,32 +480,46 @@ export default function App() {
         }
 
         const roi = monthCost > 0 ? (monthNet / monthCost) * 100 : 0;
-        return { monthCost, monthRev, monthNet, roi, selectedMonth: selectedMonthPrefix };
+        return { monthCost, monthRev, monthNet, roi, selectedMonth: `${targetYear}-${String(targetMonth).padStart(2, '0')}` };
     }, [records, summaryData, selectedDate]);
 
     // Chart Data Preparation
     const { recent30Charts, weeklyCharts, firstDate, lastDate } = useMemo(() => {
-        // Source for charts: Summary (preferred) or Records
-        const hasSummary = Object.keys(summaryData).length > 0;
+        const dateMap = new Map<string, { net: number, rev: number, cost: number }>();
 
-        let dailyData: any[] = [];
-        if (hasSummary) {
-            dailyData = Object.keys(summaryData).sort().map(date => ({
-                date, ...summaryData[date]
-            }));
-        } else {
-            const dateMap = new Map<string, { net: number, rev: number, cost: number }>();
-            records.forEach(r => {
-                if (!dateMap.has(r.date)) dateMap.set(r.date, { net: 0, rev: 0, cost: 0 });
-                const d = dateMap.get(r.date)!;
-                d.net += r.net; d.rev += r.revenue || 0; d.cost += r.cost;
-            });
-            dailyData = Array.from(dateMap.entries()).map(([date, d]) => ({
-                date, ...d, net: Math.round(d.net), rev: Math.round(d.rev), cost: Math.round(d.cost)
-            })).sort((a, b) => a.date.localeCompare(b.date));
-        }
+        const normalizeKey = (dateStr: string) => {
+            if (!dateStr) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            const d = parseInputDate(dateStr) || new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+            return dateStr;
+        };
 
-        // Recent 30: Always use Records for reliability if available, else summary
+        // Combine both sources robustly for charts
+        records.forEach(r => {
+            const normDate = normalizeKey(r.date);
+            if (!dateMap.has(normDate)) dateMap.set(normDate, { net: 0, rev: 0, cost: 0 });
+            const d = dateMap.get(normDate)!;
+            d.net += Number(r.net) || 0; d.rev += Number(r.revenue) || 0; d.cost += Number(r.cost) || 0;
+        });
+
+        Object.entries(summaryData).forEach(([dStr, val]: [string, any]) => {
+            const normDate = normalizeKey(dStr);
+            if (!dateMap.has(normDate)) {
+                dateMap.set(normDate, { net: Number(val.net) || 0, rev: Number(val.rev) || 0, cost: Number(val.cost) || 0 });
+            }
+        });
+
+        const dailyData = Array.from(dateMap.entries()).map(([date, d]) => ({
+            date, ...d, net: Math.round(d.net), rev: Math.round(d.rev), cost: Math.round(d.cost)
+        })).sort((a, b) => a.date.localeCompare(b.date));
+
+        // Recent 30: Always use combined data for reliability
         // Actually, Summary loses 'Account' detail, but Recent30Charts in UI (BarChart) uses net/rev/cost totals, so Summary is fine?
         // Wait, line 1289 ComposedChart uses {date, rev, cost, net}. Summary has these.
         // So we can use Summary for everything!
