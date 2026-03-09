@@ -431,25 +431,32 @@ export default function App() {
         const selectedMonthPrefix = selectedDate.slice(0, 7);
         let monthCost = 0, monthRev = 0, monthNet = 0;
 
-        // Use Summary if available (covers all history)
-        const hasSummary = Object.keys(summaryData).length > 0;
-        if (hasSummary) {
+        // Combine data sources robustly
+        const dateMap = new Map<string, { net: number, rev: number, cost: number }>();
+
+        // 1. Fill from records (most accurate recent source)
+        records.forEach(r => {
+            if (!dateMap.has(r.date)) dateMap.set(r.date, { net: 0, rev: 0, cost: 0 });
+            const d = dateMap.get(r.date)!;
+            d.net += r.net; d.rev += r.revenue || 0; d.cost += r.cost;
+        });
+
+        // 2. Fill gaps from summary (historical source)
+        if (Object.keys(summaryData).length > 0) {
             Object.entries(summaryData).forEach(([d, val]: [string, any]) => {
-                if (d.startsWith(selectedMonthPrefix)) {
-                    monthCost += (val.cost || 0);
-                    monthRev += (val.rev || 0);
-                    monthNet += (val.net || 0);
+                if (!dateMap.has(d)) {
+                    dateMap.set(d, { net: val.net || 0, rev: val.rev || 0, cost: val.cost || 0 });
                 }
             });
-        } else {
-            // Fallback to loaded records
-            records.forEach(r => {
-                if (r.date.startsWith(selectedMonthPrefix)) {
-                    monthCost += (r.cost || 0);
-                    monthRev += (r.revenue || 0);
-                    monthNet += (r.net || 0);
-                }
-            });
+        }
+
+        // 3. Calculate month stats
+        for (const [date, data] of dateMap.entries()) {
+            if (date.startsWith(selectedMonthPrefix)) {
+                monthCost += data.cost;
+                monthRev += data.rev;
+                monthNet += data.net;
+            }
         }
 
         const roi = monthCost > 0 ? (monthNet / monthCost) * 100 : 0;
