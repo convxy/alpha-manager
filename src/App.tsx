@@ -1496,7 +1496,7 @@ export default function App() {
                         </div>
 
                         {/* 4. ACCOUNT MANAGEMENT */}
-                        <div className="rounded-[32px] p-5 shadow-sm border flex items-center justify-between gap-4 flex-wrap" style={{ backgroundColor: COLORS.card }}>
+                        <div className="rounded-[32px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between gap-4 flex-wrap" style={{ backgroundColor: COLORS.card }}>
                             <div className="flex items-center gap-3">
                                 <span className="font-bold text-lg" style={{ color: COLORS.textPrimary }}>账号管理</span>
                                 <span className="text-sm px-4 py-1.5 rounded-full font-bold" style={{ backgroundColor: `${COLORS.primary}20`, color: COLORS.primary }}>
@@ -1528,8 +1528,8 @@ export default function App() {
                                         max="50"
                                         value={accounts.length}
                                         onChange={e => setAccountCount(parseInt(e.target.value) || 1)}
-                                        className="w-20 px-3 py-2 rounded-lg border text-center font-bold text-sm outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-                                        style={{ borderColor: COLORS.borderStrong, color: COLORS.textPrimary }}
+                                        className="w-20 px-3 py-2 rounded-lg text-center font-bold text-sm outline-none focus:ring-2 focus:ring-blue-200 transition-all backdrop-blur-sm"
+                                        style={{ backgroundColor: `${COLORS.bg}80`, color: COLORS.textPrimary }}
                                     />
                                 </div>
                             </div>
@@ -1814,7 +1814,7 @@ export default function App() {
 
 function BentoCard({ title, value, icon, sub, iconBg, valueColor }: any) {
     return (
-        <div className={`rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-transparent hover:shadow-lg transition-all duration-300 group relative overflow-hidden h-full`} style={{ backgroundColor: COLORS.card }}>
+        <div className={`rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all duration-300 group relative overflow-hidden h-full`} style={{ backgroundColor: COLORS.card }}>
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-4">
                     <div className="p-2 rounded-2xl" style={{ backgroundColor: `${iconBg}30`, color: iconBg }}>{React.cloneElement(icon, { className: '', style: { color: iconBg } })}</div>
@@ -2185,10 +2185,10 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
     };
 
     return (
-        <div className="rounded-[32px] p-6 md:p-8 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card }}>
+        <div className="rounded-[32px] p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card }}>
             <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}><Wallet style={{ color: COLORS.primary }} size={18} /> 每日数据录入</h3>
-                <div className="flex items-center gap-2 p-1.5 rounded-xl border" style={{ backgroundColor: COLORS.bg }}>
+                <div className="flex items-center gap-2 p-1.5 rounded-xl" style={{ backgroundColor: COLORS.bg }}>
                     <CalendarIcon size={14} style={{ color: COLORS.textSecondary }} />
                     <input type="date" value={date} onChange={e => onDateChange(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold" style={{ color: COLORS.textPrimary }} />
                 </div>
@@ -2210,7 +2210,7 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
                                 <th className="py-2.5 px-2 md:px-4 text-right whitespace-nowrap"><span className="hidden md:inline">空投</span>收益</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y" style={{ borderColor: COLORS.borderLight }}>{accounts.map((acc: string) => {
+                        <tbody className="divide-y divide-transparent hover:divide-slate-500/10 transition-colors">{accounts.map((acc: string) => {
                             const row = grid[acc] || {};
                             const prevBal = parseFloat(row.prevBalance) || 0;
                             const curBal = parseFloat(row.balance) || 0;
@@ -2233,7 +2233,7 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
                 </div>
 
                 {/* Footer Bar - Fixed at bottom inside the unified container */}
-                <div className="p-4 font-bold flex items-center justify-between border-t" style={{ backgroundColor: `${COLORS.bg}80`, borderColor: COLORS.borderItem, color: COLORS.textSecondary }}>
+                <div className="p-4 font-bold flex items-center justify-between" style={{ backgroundColor: `${COLORS.bg}80`, color: COLORS.textSecondary }}>
                     <button onClick={handleSave} disabled={isSaving} className="text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg text-xs tracking-wide whitespace-nowrap" style={{ backgroundColor: COLORS.primary, boxShadow: `0 5px 15px -5px ${COLORS.primary}50` }}>
                         {isSaving ? <Loader2 className="animate-spin" size={10} /> : <Save size={10} />} {isSaving ? '保存中...' : '保存'}
                     </button>
