@@ -8,7 +8,7 @@ const getColors = () => localStorage.getItem('darkMode') === 'true' ? {
   profit: '#6FCF97', loss: '#EB6B6B', revenue: '#7EB8D8', cost: '#D4B978',
   primary: '#8AADC4', grid: '#333355',
 } : {
-  bg: '#F7F7F5', card: '#FFFFFF', textPrimary: '#434343', textSecondary: '#8C8C8C',
+  bg: '#EFF2F5', card: '#FFFFFF', textPrimary: '#434343', textSecondary: '#8C8C8C',
   profit: '#8EB897', loss: '#DD8D8D', revenue: '#9FB1BC', cost: '#D3C09A',
   primary: '#6D8299', grid: '#E5E5E5',
 };
@@ -51,7 +51,7 @@ export default function ReportView({ records }: ReportViewProps) {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* 1. History Trend Chart */}
-      <div className="rounded-[32px] p-8 shadow-sm border" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+      <div className="rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]" style={{ backgroundColor: COLORS.card }}>
         <h3 className="font-bold text-lg mb-6 flex items-center gap-2" style={{ color: COLORS.textPrimary }}>
           <Activity size={20} style={{ color: COLORS.revenue }} /> 历史净利趋势
         </h3>
@@ -73,7 +73,7 @@ export default function ReportView({ records }: ReportViewProps) {
       </div>
 
       {/* 2. Detailed Table */}
-      <div className="overflow-hidden rounded-[24px] border" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+      <div className="overflow-hidden rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)]" style={{ backgroundColor: COLORS.card }}>
         <table className="w-full text-sm text-left">
           <thead style={{ backgroundColor: `${COLORS.bg}80`, color: COLORS.textSecondary }} className="text-xs font-bold uppercase tracking-wider">
             <tr>

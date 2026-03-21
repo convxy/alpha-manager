@@ -38,7 +38,7 @@ const INITIAL_BALANCES: { [key: string]: number } = {
 
 // --- 主题色板 (支持暗色模式) ---
 const LIGHT_THEME = {
-    '--color-bg': '#F7F7F5', '--color-card': '#FFFFFF', '--color-textPrimary': '#434343', '--color-textSecondary': '#8C8C8C',
+    '--color-bg': '#EFF2F5', '--color-card': '#FFFFFF', '--color-textPrimary': '#434343', '--color-textSecondary': '#8C8C8C',
     '--color-profit': '#8EB897', '--color-profitLight': '#E3EFE5', '--color-loss': '#DD8D8D', '--color-lossLight': '#F7E6E6',
     '--color-revenue': '#9FB1BC', '--color-revenueLight': '#EBF1F5', '--color-cost': '#D3C09A', '--color-costLight': '#F5F0E6',
     '--color-primary': '#6D8299', '--color-accent': '#E07A5F', '--color-grid': '#E5E5E5',
@@ -1328,7 +1328,7 @@ export default function App() {
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');`}</style>
 
             {/* HEADER */}
-            <header className="sticky top-0 z-30 px-8 py-4 flex justify-between items-center border-b" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem }}>
+            <header className="sticky top-0 z-30 px-8 py-4 flex justify-between items-center border-b" style={{ backgroundColor: COLORS.bg }}>
                 <div className="flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform">
                     <img src={logoIcon} alt="AlphaDash Icon" className="h-12 md:h-16 w-auto object-contain" />
                     <img src={logoText} alt="AlphaDash Text" className="hidden md:block h-10 w-auto object-contain mt-1 transition-all duration-300" style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }} />
@@ -1434,7 +1434,7 @@ export default function App() {
                         {/* 2. DUAL CHARTS */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Clustered Column + Line */}
-                            <div className="rounded-[40px] p-8 shadow-sm border hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+                            <div className="rounded-[40px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card }}>
                                 <div className="flex justify-between items-center mb-8">
                                     <h3 className="font-bold flex items-center gap-2 text-lg" style={{ color: COLORS.textPrimary }}><BarChart3 size={20} style={{ color: COLORS.revenue }} /> 近30天盈亏明细</h3>
                                 </div>
@@ -1455,7 +1455,7 @@ export default function App() {
                             </div>
 
                             {/* All-Time Cumulative (Weekly) */}
-                            <div className="rounded-[40px] p-8 shadow-sm border hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+                            <div className="rounded-[40px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card }}>
                                 <div className="flex justify-between items-center mb-8">
                                     <h3 className="font-bold flex items-center gap-2 text-lg" style={{ color: COLORS.textPrimary }}>
                                         <LineChart size={20} style={{ color: COLORS.primary }} />
@@ -1484,10 +1484,10 @@ export default function App() {
 
                         {/* 3. CALENDAR & SCOREBOARD */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2 rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+                            <div className="lg:col-span-2 rounded-[40px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all h-full" style={{ backgroundColor: COLORS.card }}>
                                 <CalendarHeatmap records={records} selectedDate={selectedDate} onDateClick={setSelectedDate} />
                             </div>
-                            <div className="rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all flex flex-col h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+                            <div className="rounded-[40px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all flex flex-col h-full" style={{ backgroundColor: COLORS.card }}>
                                 <LiveScoreBoard
                                     accountScores={accountScores} records={records} user={user} db={db}
                                     date={selectedDate} onSaveRecord={handleSaveRecords} isDemoMode={isDemoMode}
@@ -1496,7 +1496,7 @@ export default function App() {
                         </div>
 
                         {/* 4. ACCOUNT MANAGEMENT */}
-                        <div className="rounded-[32px] p-5 shadow-sm border flex items-center justify-between gap-4 flex-wrap" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+                        <div className="rounded-[32px] p-5 shadow-sm border flex items-center justify-between gap-4 flex-wrap" style={{ backgroundColor: COLORS.card }}>
                             <div className="flex items-center gap-3">
                                 <span className="font-bold text-lg" style={{ color: COLORS.textPrimary }}>账号管理</span>
                                 <span className="text-sm px-4 py-1.5 rounded-full font-bold" style={{ backgroundColor: `${COLORS.primary}20`, color: COLORS.primary }}>
@@ -1814,7 +1814,7 @@ export default function App() {
 
 function BentoCard({ title, value, icon, sub, iconBg, valueColor }: any) {
     return (
-        <div className={`rounded-[32px] p-6 shadow-sm border hover:shadow-lg transition-all duration-300 group relative overflow-hidden h-full`} style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+        <div className={`rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-transparent hover:shadow-lg transition-all duration-300 group relative overflow-hidden h-full`} style={{ backgroundColor: COLORS.card }}>
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-4">
                     <div className="p-2 rounded-2xl" style={{ backgroundColor: `${iconBg}30`, color: iconBg }}>{React.cloneElement(icon, { className: '', style: { color: iconBg } })}</div>
@@ -1919,7 +1919,7 @@ function HistoryStats({ accounts, records }: { accounts: string[], records: Alph
     }, [accounts, stats]);
 
     return (
-        <div className="rounded-[32px] p-6 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+        <div className="rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card }}>
             <h3 className="font-bold flex items-center gap-2 mb-4" style={{ color: COLORS.textPrimary }}>
                 <BarChart3 style={{ color: COLORS.primary }} size={18} /> 历史总数据
             </h3>
@@ -2075,7 +2075,7 @@ function CalendarHeatmap({ records, selectedDate, onDateClick }: { records: Alph
         <div className="flex flex-col h-full justify-center">
             <div className="flex justify-between items-center mb-2">
                 <h3 className="font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}><CalendarIcon style={{ color: COLORS.revenue }} size={18} /> 盈亏日历</h3>
-                <div className="flex items-center gap-1 rounded-lg p-0.5 border" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem }}>
+                <div className="flex items-center gap-1 rounded-lg p-0.5 border" style={{ backgroundColor: COLORS.bg }}>
                     <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-white rounded shadow-sm"><ChevronLeft size={12} /></button>
                     <span className="text-[10px] font-bold w-14 text-center" style={{ color: COLORS.textSecondary }}>{year}-{String(month + 1).padStart(2, '0')}</span>
                     <button onClick={() => changeMonth(1)} className="p-1 hover:bg-white rounded shadow-sm"><ChevronRight size={12} /></button>
@@ -2185,16 +2185,16 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
     };
 
     return (
-        <div className="rounded-[32px] p-6 md:p-8 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
+        <div className="rounded-[32px] p-6 md:p-8 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card }}>
             <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}><Wallet style={{ color: COLORS.primary }} size={18} /> 每日数据录入</h3>
-                <div className="flex items-center gap-2 p-1.5 rounded-xl border" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem }}>
+                <div className="flex items-center gap-2 p-1.5 rounded-xl border" style={{ backgroundColor: COLORS.bg }}>
                     <CalendarIcon size={14} style={{ color: COLORS.textSecondary }} />
                     <input type="date" value={date} onChange={e => onDateChange(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold" style={{ color: COLORS.textPrimary }} />
                 </div>
             </div>
             {/* Unified Table + Footer Container */}
-            <div className="flex-1 flex flex-col rounded-2xl border overflow-hidden" style={{ borderColor: COLORS.borderItem }}>
+            <div className="flex-1 flex flex-col rounded-2xl shadow-sm overflow-hidden" style={{ borderColor: COLORS.borderItem }}>
 
                 {/* Scrollable Table Area */}
                 <div className="overflow-x-auto overflow-y-auto flex-1 min-h-[350px]">
