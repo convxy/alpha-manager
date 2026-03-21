@@ -1328,35 +1328,35 @@ export default function App() {
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');`}</style>
 
             {/* HEADER */}
-            <header className="sticky top-0 z-30 px-8 py-4 flex justify-between items-center border-b" style={{ backgroundColor: COLORS.bg, borderColor: `${COLORS.textSecondary}20` }}>
+            <header className="sticky top-0 z-30 px-8 py-4 flex justify-between items-center border-b" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem }}>
                 <div className="flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform">
                     <img src={logoIcon} alt="AlphaDash Icon" className="h-12 md:h-16 w-auto object-contain" />
-                    <img src={logoText} alt="AlphaDash Text" className="hidden md:block h-10 w-auto object-contain mt-1" />
+                    <img src={logoText} alt="AlphaDash Text" className="hidden md:block h-10 w-auto object-contain mt-1 transition-all duration-300" style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }} />
                 </div>
                 <div className="flex gap-4">
-                    <div className="hidden md:flex rounded-full p-1.5 shadow-sm border border-white" style={{ backgroundColor: COLORS.card }}>
+                    <div className="hidden md:flex rounded-full p-1.5 shadow-sm border border-transparent" style={{ backgroundColor: COLORS.card }}>
                         <NavBtn label="看板" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<Monitor size={16} />} />
                         <NavBtn label="报表" active={activeTab === 'report'} onClick={() => setActiveTab('report')} icon={<PieChart size={16} />} />
                     </div>
-                    <button onClick={() => setImportModalOpen(true)} className="p-3 hover:shadow-md rounded-full transition-all border border-white" style={{ backgroundColor: COLORS.card }} title="导入数据">
+                    <button onClick={() => setImportModalOpen(true)} className="p-3 hover:shadow-md rounded-full transition-all border border-transparent" style={{ backgroundColor: COLORS.card }} title="导入数据">
                         <FileUp size={20} style={{ color: COLORS.primary }} />
                     </button>
                     {/* Export Button with Dropdown */}
                     <div className="relative">
-                        <button onClick={() => setExportMenuOpen(!exportMenuOpen)} className="p-3 hover:shadow-md rounded-full transition-all border border-white" style={{ backgroundColor: COLORS.card }} title="导出数据">
+                        <button onClick={() => setExportMenuOpen(!exportMenuOpen)} className="p-3 hover:shadow-md rounded-full transition-all border border-transparent" style={{ backgroundColor: COLORS.card }} title="导出数据">
                             <Download size={20} style={{ color: COLORS.profit }} />
                         </button>
                         {exportMenuOpen && (
-                            <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg border overflow-hidden z-50" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20`, minWidth: '180px' }}>
+                            <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg border overflow-hidden z-50" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem, minWidth: '180px' }}>
                                 <button onClick={downloadTemplate} className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors" style={{ color: COLORS.textPrimary }}>
                                     <span className="w-8 h-5 rounded text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: COLORS.costLight, color: COLORS.cost }}>模板</span>
                                     上传模板
                                 </button>
-                                <button onClick={exportToCSV} className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors border-t" style={{ color: COLORS.textPrimary, borderColor: `${COLORS.textSecondary}10` }}>
+                                <button onClick={exportToCSV} className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors border-t" style={{ color: COLORS.textPrimary, borderColor: COLORS.borderLight }}>
                                     <span className="w-8 h-5 rounded text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: COLORS.profitLight, color: COLORS.profit }}>CSV</span>
                                     Excel / 表格
                                 </button>
-                                <button onClick={exportToJSON} className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors border-t" style={{ color: COLORS.textPrimary, borderColor: `${COLORS.textSecondary}10` }}>
+                                <button onClick={exportToJSON} className="w-full px-4 py-3 text-left text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors border-t" style={{ color: COLORS.textPrimary, borderColor: COLORS.borderLight }}>
                                     <span className="w-8 h-5 rounded text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: COLORS.revenueLight, color: COLORS.revenue }}>JSON</span>
                                     数据备份
                                 </button>
@@ -1366,7 +1366,7 @@ export default function App() {
                     {/* Share Poster Button */}
                     <button
                         onClick={generatePoster}
-                        className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:scale-105"
+                        className="p-3 hover:shadow-md rounded-full transition-all border border-transparent hover:scale-105"
                         style={{ backgroundColor: COLORS.card }}
                         title="生成收益海报"
                     >
@@ -1376,7 +1376,7 @@ export default function App() {
                     {!isProUnlocked ? (
                         <button
                             onClick={openUnlockModal}
-                            className="p-3 hover:shadow-md rounded-full transition-all border border-white relative group"
+                            className="p-3 hover:shadow-md rounded-full transition-all border border-transparent relative group"
                             style={{ backgroundColor: COLORS.card }}
                             title="解锁 Pro 功能"
                         >
@@ -1385,7 +1385,7 @@ export default function App() {
                         </button>
                     ) : (
                         <button
-                            className="p-3 hover:shadow-md rounded-full transition-all border border-white"
+                            className="p-3 hover:shadow-md rounded-full transition-all border border-transparent"
                             style={{ backgroundColor: COLORS.card }}
                             title="Pro 已解锁"
                         >
@@ -1393,14 +1393,14 @@ export default function App() {
                         </button>
                     )}
                     {/* 🌙 暗色模式切换 */}
-                    <button onClick={toggleDarkMode} className="p-3 hover:shadow-md rounded-full transition-all border border-white" style={{ backgroundColor: COLORS.card }} title={darkMode ? '切换亮色模式' : '切换暗色模式'}>
+                    <button onClick={toggleDarkMode} className="p-3 hover:shadow-md rounded-full transition-all border border-transparent" style={{ backgroundColor: COLORS.card }} title={darkMode ? '切换亮色模式' : '切换暗色模式'}>
                         {darkMode ? <Sun size={20} style={{ color: COLORS.accent }} /> : <Moon size={20} style={{ color: COLORS.primary }} />}
                     </button>
                     {/* ☁️ 全量备份按钮 */}
-                    <button onClick={backupAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-blue-50" style={{ backgroundColor: COLORS.card }} title="备份云端数据">
+                    <button onClick={backupAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-transparent hover:bg-blue-50" style={{ backgroundColor: COLORS.card }} title="备份云端数据">
                         <Download size={20} style={{ color: COLORS.primary }} />
                     </button>
-                    <button onClick={clearAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-red-50" style={{ backgroundColor: COLORS.card }} title="清空所有数据">
+                    <button onClick={clearAllData} className="p-3 hover:shadow-md rounded-full transition-all border border-transparent hover:bg-red-50" style={{ backgroundColor: COLORS.card }} title="清空所有数据">
                         <Trash2 size={20} style={{ color: COLORS.loss }} />
                     </button>
                     {/* Login/Logout Button */}
@@ -1413,7 +1413,7 @@ export default function App() {
                             登录 / 注册
                         </button>
                     ) : user && !isDemoMode && (
-                        <button onClick={handleLogout} className="p-3 hover:shadow-md rounded-full transition-all border border-white hover:bg-gray-100" style={{ backgroundColor: COLORS.card }} title={`退出登录 (${user.email || user.displayName || '用户'})`}>
+                        <button onClick={handleLogout} className="p-3 hover:shadow-md rounded-full transition-all border border-transparent hover:bg-gray-100" style={{ backgroundColor: COLORS.card }} title={`退出登录 (${user.email || user.displayName || '用户'})`}>
                             <X size={20} style={{ color: COLORS.textSecondary }} />
                         </button>
                     )}
@@ -1434,7 +1434,7 @@ export default function App() {
                         {/* 2. DUAL CHARTS */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Clustered Column + Line */}
-                            <div className="rounded-[40px] p-8 shadow-sm border hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+                            <div className="rounded-[40px] p-8 shadow-sm border hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
                                 <div className="flex justify-between items-center mb-8">
                                     <h3 className="font-bold flex items-center gap-2 text-lg" style={{ color: COLORS.textPrimary }}><BarChart3 size={20} style={{ color: COLORS.revenue }} /> 近30天盈亏明细</h3>
                                 </div>
@@ -1455,7 +1455,7 @@ export default function App() {
                             </div>
 
                             {/* All-Time Cumulative (Weekly) */}
-                            <div className="rounded-[40px] p-8 shadow-sm border hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+                            <div className="rounded-[40px] p-8 shadow-sm border hover:shadow-lg transition-all duration-500 h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
                                 <div className="flex justify-between items-center mb-8">
                                     <h3 className="font-bold flex items-center gap-2 text-lg" style={{ color: COLORS.textPrimary }}>
                                         <LineChart size={20} style={{ color: COLORS.primary }} />
@@ -1484,10 +1484,10 @@ export default function App() {
 
                         {/* 3. CALENDAR & SCOREBOARD */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2 rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all h-full" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+                            <div className="lg:col-span-2 rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
                                 <CalendarHeatmap records={records} selectedDate={selectedDate} onDateClick={setSelectedDate} />
                             </div>
-                            <div className="rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all flex flex-col h-full" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+                            <div className="rounded-[40px] p-6 shadow-sm border hover:shadow-lg transition-all flex flex-col h-full" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
                                 <LiveScoreBoard
                                     accountScores={accountScores} records={records} user={user} db={db}
                                     date={selectedDate} onSaveRecord={handleSaveRecords} isDemoMode={isDemoMode}
@@ -1496,7 +1496,7 @@ export default function App() {
                         </div>
 
                         {/* 4. ACCOUNT MANAGEMENT */}
-                        <div className="rounded-[32px] p-5 shadow-sm border flex items-center justify-between gap-4 flex-wrap" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+                        <div className="rounded-[32px] p-5 shadow-sm border flex items-center justify-between gap-4 flex-wrap" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
                             <div className="flex items-center gap-3">
                                 <span className="font-bold text-lg" style={{ color: COLORS.textPrimary }}>账号管理</span>
                                 <span className="text-sm px-4 py-1.5 rounded-full font-bold" style={{ backgroundColor: `${COLORS.primary}20`, color: COLORS.primary }}>
@@ -1529,7 +1529,7 @@ export default function App() {
                                         value={accounts.length}
                                         onChange={e => setAccountCount(parseInt(e.target.value) || 1)}
                                         className="w-20 px-3 py-2 rounded-lg border text-center font-bold text-sm outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-                                        style={{ borderColor: `${COLORS.textSecondary}30`, color: COLORS.textPrimary }}
+                                        style={{ borderColor: COLORS.borderStrong, color: COLORS.textPrimary }}
                                     />
                                 </div>
                             </div>
@@ -1581,7 +1581,7 @@ export default function App() {
             </div>
 
             {/* MOBILE NAV */}
-            < div className="fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-xl border border-white/50 px-6 py-3 rounded-full flex gap-10 shadow-2xl shadow-slate-200/50 md:hidden z-40" style={{ backgroundColor: `${COLORS.card}CC` }}>
+            < div className="fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-xl border border-transparent/50 px-6 py-3 rounded-full flex gap-10 shadow-2xl shadow-slate-200/50 md:hidden z-40" style={{ backgroundColor: COLORS.cardBlur }}>
                 <button onClick={() => setActiveTab('dashboard')} className="transition-all" style={{ color: activeTab === 'dashboard' ? COLORS.primary : COLORS.textSecondary }}><Monitor size={24} /></button>
                 <button onClick={() => setActiveTab('report')} className="transition-all" style={{ color: activeTab === 'report' ? COLORS.primary : COLORS.textSecondary }}><PieChart size={24} /></button>
             </div >
@@ -1591,18 +1591,18 @@ export default function App() {
                 importModalOpen && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                         <div className="rounded-[32px] shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-scale-in" style={{ backgroundColor: COLORS.card }}>
-                            <div className="flex justify-between items-center p-6 border-b" style={{ borderColor: `${COLORS.textSecondary}20` }}>
+                            <div className="flex justify-between items-center p-6 border-b" style={{ borderColor: COLORS.borderItem }}>
                                 <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}>批量导入向导</h3>
                                 <button onClick={() => setImportModalOpen(false)} className="p-2 hover:bg-black/5 rounded-full"><X size={20} /></button>
                             </div>
                             {step === 'paste' && (
                                 <div className="flex-1 p-8 flex flex-col gap-6">
-                                    <textarea className="flex-1 border-2 rounded-2xl p-6 font-mono text-xs focus:outline-none resize-none transition-all" style={{ backgroundColor: COLORS.bg, borderColor: `${COLORS.textSecondary}20`, color: COLORS.textPrimary }} placeholder="在此处直接粘贴 Excel 数据 (Ctrl+V)..." value={pasteContent} onChange={e => setPasteContent(e.target.value)} />
+                                    <textarea className="flex-1 border-2 rounded-2xl p-6 font-mono text-xs focus:outline-none resize-none transition-all" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem, color: COLORS.textPrimary }} placeholder="在此处直接粘贴 Excel 数据 (Ctrl+V)..." value={pasteContent} onChange={e => setPasteContent(e.target.value)} />
                                     <div className="flex justify-between items-center">
                                         <button
                                             onClick={insertDemoData}
                                             className="px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-md border-2 border-dashed"
-                                            style={{ backgroundColor: `${COLORS.revenue}15`, borderColor: COLORS.revenue, color: COLORS.revenue }}
+                                            style={{ backgroundColor: COLORS.revenueSubtle, borderColor: COLORS.revenue, color: COLORS.revenue }}
                                         >
                                             <Gift size={18} />
                                             导入测试数据
@@ -1616,12 +1616,12 @@ export default function App() {
                             )}
                             {step === 'preview' && (
                                 <div className="flex-1 flex flex-col gap-6 overflow-hidden p-8">
-                                    <div className="flex-1 overflow-auto border rounded-2xl" style={{ borderColor: `${COLORS.textSecondary}20`, backgroundColor: COLORS.bg }}>
+                                    <div className="flex-1 overflow-auto border rounded-2xl" style={{ borderColor: COLORS.borderItem, backgroundColor: COLORS.bg }}>
                                         <table className="w-full text-xs text-left">
                                             <thead className="sticky top-0 shadow-sm z-10" style={{ backgroundColor: COLORS.card }}>
                                                 <tr><th className="p-4">日期</th><th className="p-4">账号</th><th className="p-4">积分</th><th className="p-4">磨损</th><th className="p-4">收益</th></tr>
                                             </thead>
-                                            <tbody className="divide-y" style={{ borderColor: `${COLORS.textSecondary}10` }}>
+                                            <tbody className="divide-y" style={{ borderColor: COLORS.borderLight }}>
                                                 {parsedRecords.map((r, i) => (
                                                     <tr key={i}>
                                                         <td className="p-4"><input className="bg-transparent w-24 outline-none border-b border-transparent focus:border-blue-500 transition-colors" value={r.date} onChange={e => {
@@ -1646,7 +1646,7 @@ export default function App() {
                                         </table>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <button onClick={() => setStep('paste')} className="px-6 py-3 border rounded-xl font-bold" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20`, color: COLORS.textSecondary }}>返回</button>
+                                        <button onClick={() => setStep('paste')} className="px-6 py-3 border rounded-xl font-bold" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem, color: COLORS.textSecondary }}>返回</button>
                                         <div className="flex items-center gap-4">
                                             <span className="text-xs font-bold" style={{ color: COLORS.textSecondary }}>共 {parsedRecords.length} 条数据 (可直接修改)</span>
                                             <button onClick={commitToDb} disabled={isImporting} className="px-8 py-3 text-white rounded-xl font-bold shadow-lg transition-all flex items-center gap-2" style={{ backgroundColor: COLORS.profit }}>
@@ -1667,7 +1667,7 @@ export default function App() {
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in" style={{ backgroundColor: COLORS.card }}>
                         {/* Header */}
-                        <div className="flex justify-between items-center p-6 border-b" style={{ borderColor: `${COLORS.textSecondary}20` }}>
+                        <div className="flex justify-between items-center p-6 border-b" style={{ borderColor: COLORS.borderItem }}>
                             <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}>
                                 <Gift size={24} style={{ color: COLORS.revenue }} />
                                 解锁 Pro 功能
@@ -1814,7 +1814,7 @@ export default function App() {
 
 function BentoCard({ title, value, icon, sub, iconBg, valueColor }: any) {
     return (
-        <div className={`rounded-[32px] p-6 shadow-sm border hover:shadow-lg transition-all duration-300 group relative overflow-hidden h-full`} style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+        <div className={`rounded-[32px] p-6 shadow-sm border hover:shadow-lg transition-all duration-300 group relative overflow-hidden h-full`} style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-4">
                     <div className="p-2 rounded-2xl" style={{ backgroundColor: `${iconBg}30`, color: iconBg }}>{React.cloneElement(icon, { className: '', style: { color: iconBg } })}</div>
@@ -1919,22 +1919,22 @@ function HistoryStats({ accounts, records }: { accounts: string[], records: Alph
     }, [accounts, stats]);
 
     return (
-        <div className="rounded-[32px] p-6 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+        <div className="rounded-[32px] p-6 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
             <h3 className="font-bold flex items-center gap-2 mb-4" style={{ color: COLORS.textPrimary }}>
                 <BarChart3 style={{ color: COLORS.primary }} size={18} /> 历史总数据
             </h3>
 
             {/* Total Summary - Single Row */}
             <div className="grid grid-cols-4 gap-4 mb-6 p-4 rounded-2xl items-center" style={{ backgroundColor: COLORS.bg }}>
-                <div className="text-center border-r" style={{ borderColor: `${COLORS.textSecondary}20` }}>
+                <div className="text-center border-r" style={{ borderColor: COLORS.borderItem }}>
                     <div className="text-[12px] font-bold mb-1 opacity-60">总收益</div>
                     <div className="text-lg font-bold font-mono" style={{ color: COLORS.profit }}>${stats.totalRevenue.toFixed(0)}</div>
                 </div>
-                <div className="text-center border-r" style={{ borderColor: `${COLORS.textSecondary}20` }}>
+                <div className="text-center border-r" style={{ borderColor: COLORS.borderItem }}>
                     <div className="text-[12px] font-bold mb-1 opacity-60">总磨损</div>
                     <div className="text-lg font-bold font-mono" style={{ color: COLORS.loss }}>${stats.totalCost.toFixed(0)}</div>
                 </div>
-                <div className="text-center border-r" style={{ borderColor: `${COLORS.textSecondary}20` }}>
+                <div className="text-center border-r" style={{ borderColor: COLORS.borderItem }}>
                     <div className="text-[12px] font-bold mb-1 opacity-60">总净利润</div>
                     <div className="text-lg font-bold font-mono" style={{ color: stats.totalNet >= 0 ? COLORS.profit : COLORS.loss }}>
                         ${stats.totalNet.toFixed(0)}
@@ -1973,7 +1973,7 @@ function HistoryStats({ accounts, records }: { accounts: string[], records: Alph
             </div>
 
             {/* Visual Chart at Bottom */}
-            <div className="h-36 w-full mt-auto pt-3 border-t" style={{ borderColor: `${COLORS.textSecondary}10` }}>
+            <div className="h-36 w-full mt-auto pt-3 border-t" style={{ borderColor: COLORS.borderLight }}>
                 <div className="text-[10px] font-bold mb-0 text-center opacity-50">净利润分布</div>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
@@ -2075,7 +2075,7 @@ function CalendarHeatmap({ records, selectedDate, onDateClick }: { records: Alph
         <div className="flex flex-col h-full justify-center">
             <div className="flex justify-between items-center mb-2">
                 <h3 className="font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}><CalendarIcon style={{ color: COLORS.revenue }} size={18} /> 盈亏日历</h3>
-                <div className="flex items-center gap-1 rounded-lg p-0.5 border" style={{ backgroundColor: COLORS.bg, borderColor: `${COLORS.textSecondary}20` }}>
+                <div className="flex items-center gap-1 rounded-lg p-0.5 border" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem }}>
                     <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-white rounded shadow-sm"><ChevronLeft size={12} /></button>
                     <span className="text-[10px] font-bold w-14 text-center" style={{ color: COLORS.textSecondary }}>{year}-{String(month + 1).padStart(2, '0')}</span>
                     <button onClick={() => changeMonth(1)} className="p-1 hover:bg-white rounded shadow-sm"><ChevronRight size={12} /></button>
@@ -2185,16 +2185,16 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
     };
 
     return (
-        <div className="rounded-[32px] p-6 md:p-8 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card, borderColor: `${COLORS.textSecondary}20` }}>
+        <div className="rounded-[32px] p-6 md:p-8 shadow-sm border hover:shadow-lg transition-all duration-300 h-full flex flex-col" style={{ backgroundColor: COLORS.card, borderColor: COLORS.borderItem }}>
             <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold flex items-center gap-2" style={{ color: COLORS.textPrimary }}><Wallet style={{ color: COLORS.primary }} size={18} /> 每日数据录入</h3>
-                <div className="flex items-center gap-2 p-1.5 rounded-xl border" style={{ backgroundColor: COLORS.bg, borderColor: `${COLORS.textSecondary}20` }}>
+                <div className="flex items-center gap-2 p-1.5 rounded-xl border" style={{ backgroundColor: COLORS.bg, borderColor: COLORS.borderItem }}>
                     <CalendarIcon size={14} style={{ color: COLORS.textSecondary }} />
                     <input type="date" value={date} onChange={e => onDateChange(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold" style={{ color: COLORS.textPrimary }} />
                 </div>
             </div>
             {/* Unified Table + Footer Container */}
-            <div className="flex-1 flex flex-col rounded-2xl border overflow-hidden" style={{ borderColor: `${COLORS.textSecondary}20` }}>
+            <div className="flex-1 flex flex-col rounded-2xl border overflow-hidden" style={{ borderColor: COLORS.borderItem }}>
 
                 {/* Scrollable Table Area */}
                 <div className="overflow-x-auto overflow-y-auto flex-1 min-h-[350px]">
@@ -2210,7 +2210,7 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
                                 <th className="py-2.5 px-2 md:px-4 text-right whitespace-nowrap"><span className="hidden md:inline">空投</span>收益</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y" style={{ borderColor: `${COLORS.textSecondary}10` }}>{accounts.map((acc: string) => {
+                        <tbody className="divide-y" style={{ borderColor: COLORS.borderLight }}>{accounts.map((acc: string) => {
                             const row = grid[acc] || {};
                             const prevBal = parseFloat(row.prevBalance) || 0;
                             const curBal = parseFloat(row.balance) || 0;
@@ -2233,7 +2233,7 @@ function BatchEntry({ accounts, records, user, onSaveRecord, date, onDateChange,
                 </div>
 
                 {/* Footer Bar - Fixed at bottom inside the unified container */}
-                <div className="p-4 font-bold flex items-center justify-between border-t" style={{ backgroundColor: `${COLORS.bg}80`, borderColor: `${COLORS.textSecondary}20`, color: COLORS.textSecondary }}>
+                <div className="p-4 font-bold flex items-center justify-between border-t" style={{ backgroundColor: `${COLORS.bg}80`, borderColor: COLORS.borderItem, color: COLORS.textSecondary }}>
                     <button onClick={handleSave} disabled={isSaving} className="text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg text-xs tracking-wide whitespace-nowrap" style={{ backgroundColor: COLORS.primary, boxShadow: `0 5px 15px -5px ${COLORS.primary}50` }}>
                         {isSaving ? <Loader2 className="animate-spin" size={10} /> : <Save size={10} />} {isSaving ? '保存中...' : '保存'}
                     </button>
